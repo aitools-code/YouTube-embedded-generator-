@@ -1,0 +1,265 @@
+import React, { useState } from 'react';
+import { Copy, Youtube, Code } from 'lucide-react';
+
+export default function YouTubeEmbedGenerator() {
+  const [videoUrl, setVideoUrl] = useState('');
+  const [width, setWidth] = useState('560');
+  const [height, setHeight] = useState('315');
+  const [border, setBorder] = useState('0');
+  const [borderRadius, setBorderRadius] = useState('8');
+  const [shadow, setShadow] = useState(true);
+  const [autoplay, setAutoplay] = useState(false);
+  const [controls, setControls] = useState(true);
+  const [muted, setMuted] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const extractVideoId = (url) => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/shorts\/([^&\n?#]+)/
+    ];
+    
+    for (let pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return '';
+  };
+
+  const videoId = extractVideoId(videoUrl);
+  const embedUrl = videoId 
+    ? `https://www.youtube.com/embed/${videoId}?autoplay=${autoplay ? '1' : '0'}&controls=${controls ? '1' : '0'}&mute=${muted ? '1' : '0'}`
+    : '';
+
+  const generateCode = () => {
+    if (!videoId) return '';
+    
+    const html = `<!-- YouTube Video Embed -->
+<div class="youtube-container">
+  <iframe 
+    src="${embedUrl}"
+    width="${width}" 
+    height="${height}"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+  ></iframe>
+</div>`;
+
+    const css = `<style>
+.youtube-container {
+  position: relative;
+  width: ${width}px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.youtube-container iframe {
+  width: 100%;
+  height: ${height}px;
+  border: ${border}px solid #ddd;
+  border-radius: ${borderRadius}px;
+  ${shadow ? 'box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);' : ''}
+}
+</style>`;
+
+    return html + '\n\n' + css;
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(generateCode());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Youtube className="w-10 h-10 text-red-600" />
+            <h1 className="text-4xl font-bold text-gray-800">YouTube Embed Generator</h1>
+          </div>
+          <p className="text-gray-600">Customize aur generate karein apni YouTube video embed code</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Settings Panel */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Code className="w-5 h-5" />
+              Settings
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  YouTube Video URL
+                </label>
+                <input
+                  type="text"
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Width (px)
+                  </label>
+                  <input
+                    type="number"
+                    value={width}
+                    onChange={(e) => setWidth(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Height (px)
+                  </label>
+                  <input
+                    type="number"
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Border (px)
+                  </label>
+                  <input
+                    type="number"
+                    value={border}
+                    onChange={(e) => setBorder(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Border Radius (px)
+                  </label>
+                  <input
+                    type="number"
+                    value={borderRadius}
+                    onChange={(e) => setBorderRadius(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={shadow}
+                    onChange={(e) => setShadow(e.target.checked)}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Box Shadow</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoplay}
+                    onChange={(e) => setAutoplay(e.target.checked)}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Autoplay</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={controls}
+                    onChange={(e) => setControls(e.target.checked)}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Show Controls</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={muted}
+                    onChange={(e) => setMuted(e.target.checked)}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Muted</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Preview Panel */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">Preview</h2>
+            
+            <div className="bg-gray-100 rounded-lg p-4 mb-4 min-h-[200px] flex items-center justify-center">
+              {videoId ? (
+                <div style={{ 
+                  width: `${width}px`, 
+                  maxWidth: '100%',
+                  margin: '0 auto'
+                }}>
+                  <iframe
+                    src={embedUrl}
+                    width={width}
+                    height={height}
+                    style={{
+                      width: '100%',
+                      border: `${border}px solid #ddd`,
+                      borderRadius: `${borderRadius}px`,
+                      boxShadow: shadow ? '0 4px 6px rgba(0, 0, 0, 0.1)' : 'none'
+                    }}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <p className="text-gray-500">Video URL dalen preview dekhne ke liye</p>
+              )}
+            </div>
+
+            <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-400 font-mono">HTML + CSS Code</span>
+                <button
+                  onClick={copyToClipboard}
+                  disabled={!videoId}
+                  className="flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  <Copy className="w-4 h-4" />
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+              <pre className="text-xs text-green-400 font-mono overflow-x-auto">
+                {videoId ? generateCode() : '// Code yahan generate hoga...'}
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold mb-3">Kaise Use Karen?</h3>
+          <ol className="list-decimal list-inside space-y-2 text-gray-700">
+            <li>Apni YouTube video ka URL "YouTube Video URL" field mein paste karen</li>
+            <li>Width, height, aur styling options customize karen</li>
+            <li>Preview mein apni video dekhen</li>
+            <li>"Copy" button click karke generated code copy karen</li>
+            <li>Code ko apni website ke HTML file mein paste karen</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  );
+}
